@@ -13,20 +13,28 @@ SCOPES = [
     'https://www.googleapis.com/auth/gmail.send'
 ]
 
-CLIENT_SECRET_FILE = 'client_secret.json'
-
 def get_google_auth_flow():
-    """Initializes the OAuth2 flow."""
-    if not os.path.exists(CLIENT_SECRET_FILE):
-        st.error(f"Error: {CLIENT_SECRET_FILE} not found. Please place your Google Cloud credentials file in the root directory.")
-        return None
+    """Initializes the OAuth2 flow using Streamlit secrets."""
+    try:
+        # Read credentials from st.secrets (works on both local and cloud)
+        client_config = {
+            "web": {
+                "client_id": st.secrets["GOOGLE_CLIENT_ID"],
+                "client_secret": st.secrets["GOOGLE_CLIENT_SECRET"],
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+            }
+        }
         
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRET_FILE,
-        scopes=SCOPES,
-        redirect_uri='http://localhost:8501' # Standard Streamlit local port
-    )
-    return flow
+        flow = Flow.from_client_config(
+            client_config,
+            scopes=SCOPES,
+            redirect_uri='http://localhost:8501' # Standard Streamlit local port
+        )
+        return flow
+    except KeyError as e:
+        st.error(f"Error: Missing secret {e}. Please set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Streamlit secrets.")
+        return None
 
 def login_button():
     """Generates the login URL and displays a button."""
