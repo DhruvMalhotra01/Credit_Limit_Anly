@@ -14,9 +14,15 @@ SCOPES = [
 ]
 
 # Detect if running on Streamlit Cloud vs local
-if "streamlit.app" in st.runtime.scriptrunner.get_script_run_ctx().session_id:
+# Use environment variable or check deployment context
+import os
+STREAMLIT_SERVER_HEADLESS = os.getenv("STREAMLIT_SERVER_HEADLESS", "false").lower() == "true"
+
+if STREAMLIT_SERVER_HEADLESS or os.getenv("STREAMLIT_CLOUD", "false").lower() == "true":
+    # Running on Streamlit Cloud - must match your app's public URL
     REDIRECT_URI = "https://creditanlys.streamlit.app"
 else:
+    # Running locally
     REDIRECT_URI = "http://localhost:8501"
 
 def get_google_auth_flow():
