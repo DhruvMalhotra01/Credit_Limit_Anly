@@ -13,6 +13,12 @@ SCOPES = [
     'https://www.googleapis.com/auth/gmail.send'
 ]
 
+# Detect if running on Streamlit Cloud vs local
+if "streamlit.app" in st.runtime.scriptrunner.get_script_run_ctx().session_id:
+    REDIRECT_URI = "https://creditanlys.streamlit.app"
+else:
+    REDIRECT_URI = "http://localhost:8501"
+
 def get_google_auth_flow():
     """Initializes the OAuth2 flow using Streamlit secrets."""
     try:
@@ -29,7 +35,7 @@ def get_google_auth_flow():
         flow = Flow.from_client_config(
             client_config,
             scopes=SCOPES,
-            redirect_uri='http://localhost:8501' # Standard Streamlit local port
+            redirect_uri=REDIRECT_URI
         )
         return flow
     except KeyError as e:
